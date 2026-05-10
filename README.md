@@ -3,9 +3,17 @@
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
 ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
 **BlackCOIN** es una plataforma de criptomoneda de nivel profesional desarrollada en TypeScript. A diferencia de las implementaciones básicas, BlackCOIN integra una arquitectura robusta de servicios que incluye persistencia en base de datos SQL, gestión avanzada de usuarios, sistema de tickets de soporte y una red P2P con auto-descubrimiento.
+
+---
+
+## 💬 Comunidad y Soporte
+¡Únete a nuestro servidor oficial de Discord para estar al tanto de las actualizaciones, soporte técnico y minería en comunidad!
+
+👉 **[Unirse al Discord de BlackCOIN](https://discord.gg/GEFSfeutmP)**
 
 ---
 
