@@ -1,0 +1,43 @@
+{
+  "name": "blackcoin",
+  "version": "1.0.0",
+  "description": "BlackCOIN - Cryptocurrency blockchain with multi-wallet, PoW, P2P networking, admin system & support tickets",
+  "scripts": {
+    "compile": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run compile",
+    "wallet": "ts-node src/index.ts wallet",
+    "mine": "ts-node src/index.ts mine",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "watcher": "node blockWatcher.js",
+    "explorer": "start http://localhost:3001"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.17.24",
+    "axios": "^1.6.0",
+    "better-sqlite3": "^12.9.0",
+    "body-parser": "^1.20.2",
+    "crypto-js": "^4.2.0",
+    "elliptic": "^6.5.4",
+    "express": "^4.18.2",
+    "lodash": "^4.18.1",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/body-parser": "^1.19.5",
+    "@types/crypto-js": "^4.2.2",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.5.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

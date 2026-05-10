@@ -1,0 +1,29 @@
+[
+  {
+    "index": 0,
+    "hash": "c0368034d3277e57af11311c0ad7f25c2cbfb0876d9dcda96645423ba586e321",
+    "previousHash": "",
+    "timestamp": 0,
+    "data": [
+      {
+        "id": "d5ee5133d86bbf933ef5dfadeee9874db61974489c1161b5bc671d97bab0a917",
+        "txIns": [
+          {
+            "txOutId": "",
+            "txOutIndex": 0,
+            "signature": ""
+          }
+        ],
+        "txOuts": [
+          {
+            "address": "P0000000000000000000000000000000000000000",
+            "amount": 21000000
+          }
+        ],
+        "timestamp": 0
+      }
+    ],
+    "difficulty": 0,
+    "nonce": 0
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "network": "mainnet",
+  "httpPort": 3001,
+  "p2pPort": 6001,
+  "blockGenerationInterval": 60,
+  "difficultyAdjustmentInterval": 10,
+  "coinbaseAmount": 50,
+  "halvingInterval": 210000,
+  "minDifficulty": 2,
+  "miningThreads": 1,
+  "dataDir": "/var/lib/blackcoin/data",
+  "bootstrapPeers": [],
+  "maxPeers": 50,
+  "logLevel": "info"
+}

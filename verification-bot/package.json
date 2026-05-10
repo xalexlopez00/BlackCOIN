@@ -1,0 +1,14 @@
+{
+  "name": "verification-bot",
+  "version": "1.0.0",
+  "description": "Bot de Discord para autenticación via DM",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7"
+  }
+}

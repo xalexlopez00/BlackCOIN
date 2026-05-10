@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BlackCOIN Wallet</title>
+<style>
+:root{--bg:#0b0e17;--card:#141b2a;--border:#1e2a3a;--gold:#f0b90b;--green:#0ecb81;--red:#f6465d;--blue:#5b8def;--text:#e0e0e0;--muted:#6a7a8a;--radius:10px;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);padding:20px 0;flex-shrink:0}
+.sidebar h2{padding:0 20px 20px;color:var(--gold);font-size:18px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.sidebar h2 small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
+.nav{padding:8px 0}
+.nav a{display:flex;align-items:center;gap:10px;padding:12px 20px;color:var(--muted);text-decoration:none;font-size:14px;transition:.15s;border-left:3px solid transparent}
+.nav a:hover{color:var(--text);background:#1a2333}
+.nav a.active{color:var(--gold);border-left-color:var(--gold);background:#1a2333}
+.nav a .ico{font-size:16px;width:20px;text-align:center}
+.main{flex:1;padding:25px;overflow-y:auto;max-height:100vh}
+.page{display:none}.page.active{display:block}
+h1{font-size:22px;margin-bottom:6px;color:var(--text)}
+h1 span{font-size:13px;color:var(--muted);font-weight:400}
+p.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:25px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.card .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.card .val{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.card .val.gold{color:var(--gold)}.card .val.green{color:var(--green)}.card .val.red{color:var(--red)}.card .val.blue{color:var(--blue)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden}
+.panel h3{padding:14px 18px;font-size:14px;color:var(--gold);border-bottom:1px solid var(--border);background:#0f1522}
+.panel .body{padding:18px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;border-bottom:1px solid #1a2333;font-variant-numeric:tabular-nums}
+tr:hover td{background:#1a2333}
+.mono{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:12px}
+.hash{color:var(--blue)}.addr{color:var(--green)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-gold{background:var(--gold);color:#0b0e17}.btn-gold:hover{filter:brightness(1.1)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:#1a2333}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{filter:brightness(1.1)}
+.btn-sm{padding:6px 14px;font-size:12px}
+input,select{width:100%;padding:10px 14px;background:#0f1522;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;transition:.15s;font-family:inherit}
+input:focus{border-color:var(--gold)}input::placeholder{color:var(--muted)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
+.alert-show{display:block}
+.alert-success{background:#0ecb8115;border:1px solid var(--green);color:var(--green)}
+.alert-error{background:#f6465d15;border:1px solid var(--red);color:var(--red)}
+.alert-info{background:#5b8def15;border:1px solid var(--blue);color:var(--blue)}
+.copy-btn{cursor:pointer;color:var(--muted);font-size:12px;margin-left:6px}.copy-btn:hover{color:var(--gold)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#00000088;z-index:100;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:25px;max-width:460px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h3{color:var(--gold);margin-bottom:15px;font-size:16px}
+.modal .btn{margin-top:6px}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.tabs button{padding:10px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:.15s}
+.tabs button.active{border-bottom-color:var(--gold);color:var(--gold)}
+.tab-content{display:none}.tab-content.active{display:block}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.badge-green{background:#0ecb8122;color:var(--green)}
+.badge-gray{background:#6a7a8a22;color:var(--muted)}
+.empty{text-align:center;padding:30px;color:var(--muted);font-size:13px}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.status-dot.online{background:var(--green)}.status-dot.offline{background:var(--muted)}
+.chat-msg{display:flex;margin-bottom:12px}
+.chat-msg.user{justify-content:flex-start}
+.chat-msg.admin{justify-content:flex-end}
+.chat-msg.system{justify-content:center}
+.chat-bubble{max-width:75%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.4;position:relative}
+.chat-msg.user .chat-bubble{background:#1a2a4a;border-bottom-left-radius:4px;color:var(--text)}
+.chat-msg.admin .chat-bubble{background:var(--gold);color:#0b0e17;border-bottom-right-radius:4px}
+.chat-msg.system .chat-bubble{background:transparent;color:var(--muted);font-size:11px;text-align:center;padding:4px 10px}
+.chat-bubble .chat-author{font-size:10px;color:var(--muted);margin-bottom:3px;font-weight:600}
+.chat-msg.admin .chat-bubble .chat-author{color:#0b0e1788}
+.chat-bubble .chat-time{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
+.chat-msg.admin .chat-bubble .chat-time{color:#0b0e1788}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:50;background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:18px}
+.login-overlay{display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;justify-content:center;align-items:center}
+.login-overlay.hidden{display:none}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:30px;max-width:400px;width:90%}
+.login-box h2{color:var(--gold);font-size:22px;margin-bottom:4px}
+.login-box p.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+.login-box .tabs{margin-bottom:16px}
+.login-box .btn{width:100%;justify-content:center}
+.login-box .form-group{margin-bottom:12px}
+.logout-link{color:var(--red)!important;border-left-color:transparent!important;margin-top:20px}
+.logout-link:hover{background:#2a1520!important}
+.help-btn{position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:50%;background:var(--gold);color:#0b0e17;border:none;font-size:20px;font-weight:700;cursor:pointer;z-index:999;box-shadow:0 4px 15px #f0b90b55;transition:.2s;display:flex;align-items:center;justify-content:center}
+.help-btn:hover{transform:scale(1.1);filter:brightness(1.1)}
+.help-tooltip{position:fixed;bottom:75px;right:20px;width:340px;max-width:calc(100vw - 40px);background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:18px;z-index:999;box-shadow:0 8px 30px #00000088;display:none}
+.help-tooltip.show{display:block}
+.help-tooltip h4{color:var(--gold);font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.help-tooltip p{color:var(--text);font-size:13px;line-height:1.5;margin-bottom:6px}
+.help-tooltip ul{margin:6px 0 0 18px;color:var(--muted);font-size:12px;line-height:1.6}
+.help-tooltip .close-help{float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0;line-height:1}
+.help-tooltip .close-help:hover{color:var(--gold)}
+@media(max-width:768px){
+.sidebar{position:fixed;left:-240px;top:0;bottom:0;z-index:40;transition:.3s;width:220px}
+.sidebar.open{left:0}
+.mobile-toggle{display:block}
+.main{padding:20px;padding-top:60px}
+.grid{grid-template-columns:repeat(2,1fr)}
+.form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h2>BlackCOIN</h2>
+    <p class="sub">Web Wallet — Inicia sesion o registrate</p>
+    <div class="tabs">
+      <button class="active" onclick="loginTab('login')">Iniciar Sesion</button>
+      <button onclick="loginTab('register')">Registrarse</button>
+    </div>
+    <div class="tab-content active" id="login-tab-login">
+      <div class="form-group"><label>Usuario</label><input id="loginUser" placeholder="usuario" autocomplete="username"></div>
+      <div class="form-group"><label>Contrasena</label><input id="loginPass" type="password" placeholder="••••" autocomplete="current-password"></div>
+      <button class="btn btn-gold" onclick="doLogin()">Iniciar Sesion</button>
+      <div style="margin-top:8px;text-align:center"><a href="#" onclick="loginTab('recover');return false" style="color:var(--muted);font-size:12px">¿Olvidaste tu contraseña?</a></div>
+      <div id="loginResult" style="margin-top:10px"></div>
+    </div>
+    <div class="tab-content" id="login-tab-register">
+      <div class="form-group"><label>Usuario (min 3 caracteres)</label><input id="regUser" placeholder="usuario" autocomplete="username"></div>
+      <div class="form-group"><label>Correo electronico (para recuperar contrasena)</label><input id="regEmail" type="email" placeholder="correo@ejemplo.com" autocomplete="email"></div>
+      <div class="form-group"><label>Contrasena (min 4 caracteres)</label><input id="regPass" type="password" placeholder="••••" autocomplete="new-password"></div>
+      <div class="form-group"><label>Confirmar contrasena</label><input id="regPass2" type="password" placeholder="••••" autocomplete="new-password"></div>
+      <button class="btn btn-gold" onclick="doRegister()">Registrarse</button>
+      <div id="regResult" style="margin-top:10px"></div>
+    </div>
+    <div class="tab-content" id="login-tab-recover">
+      <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Introduce tu usuario y se creara un ticket de soporte. Un admin te atenderá para verificar tu identidad y restablecer la contraseña.</p>
+      <div class="form-group"><label>Usuario</label><input id="recoverUser" placeholder="tu usuario" autocomplete="username"></div>
+      <button class="btn btn-gold" onclick="doRecover()" style="margin-bottom:6px">Solicitar Recuperacion</button>
+      <button class="btn btn-outline btn-sm" onclick="loginTab('login')">← Volver al inicio de sesion</button>
+      <div id="recoverResult" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+<div class="mobile-toggle" onclick="toggleSidebar()">☰</div>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <h2>BlackCOIN <small>Web Wallet</small></h2>
+    <nav class="nav">
+      <a href="#dashboard" class="active" onclick="nav('dashboard')"><span class="ico">📊</span>Dashboard</a>
+      <a href="#wallet" onclick="nav('wallet')"><span class="ico">👛</span>Wallet</a>
+      <a href="#send" onclick="nav('send')"><span class="ico">📤</span>Enviar</a>
+      <a href="#receive" onclick="nav('receive')"><span class="ico">📥</span>Recibir</a>
+      <a href="#mine" onclick="nav('mine')"><span class="ico">⛏️</span>Minar</a>
+      <a href="#cns" onclick="nav('cns')"><span class="ico">📇</span>CNS Names</a>
+      <a href="#network" onclick="nav('network')"><span class="ico">🌐</span>Red</a>
+      <a href="#explorer" onclick="nav('explorer')"><span class="ico">🔍</span>Explorador</a>
+      <a href="#support" onclick="nav('support')"><span class="ico">🎫</span>Soporte</a>
+      <a href="#profile" onclick="nav('profile')" id="navProfile" style="display:none"><span class="ico">👤</span>Perfil</a>
+      <a href="#admin" onclick="nav('admin')" id="navAdmin" style="display:none"><span class="ico">⚙️</span>Admin</a>
+      <a href="#" class="logout-link" onclick="doLogout()"><span class="ico">🚪</span>Cerrar Sesion</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <h1>Dashboard</h1>
+      <p class="sub">Estado general del nodo y la red BlackCOIN</p>
+      <div class="grid" id="dashStats"></div>
+      <div class="panel"><h3>Ultimos Bloques</h3><div class="body" id="dashBlocks"></div></div>
+    </div>
+
+    <!-- WALLET -->
+    <div class="page" id="page-wallet">
+      <h1>Wallet <span>Administra tus carteras</span></h1>
+      <p class="sub">Crea, importa, exporta y consulta tus carteras</p>
+      <div class="tabs">
+        <button class="active" onclick="switchTab('wallet','list')">Mis Carteras</button>
+        <button onclick="switchTab('wallet','create')">Crear</button>
+        <button onclick="switchTab('wallet','import')">Importar</button>
+      </div>
+      <div class="tab-content active" id="tab-wallet-list"><div id="walletList"></div></div>
+      <div class="tab-content" id="tab-wallet-create">
+        <div class="panel"><div class="body">
+          <div class="form-group"><label>Nombre de la cartera</label><input id="wCreateName" placeholder="ej: mi billetera"></div>
+          <div class="form-group"><label>Contraseña (min 4 caracteres)</label><input id="wCreatePass" type="password" placeholder="••••"></div>
+          <div class="form-group"><label>Confirmar contraseña</label><input id="wCreatePass2" type="password" placeholder="••••"></div>
+          <button class="btn btn-gold" onclick="createWallet()">Crear Cartera</button>
+          <div id="wCreateResult"></div>
+        </div></div>
+      </div>
+      <div class="tab-content" id="tab-wallet-import">
+        <div class="panel"><div class="body">
+          <div class="form-group"><label>Private Key (hex 64 caracteres)</label><input id="wImportKey" placeholder="a1b2c3..."></div>
+          <div class="form-group"><label>Nombre</label><input id="wImportName" placeholder="ej: cartera importada"></div>
+          <div class="form-group"><label>Contraseña</label><input id="wImportPass" type="password" placeholder="••••"></div>
+          <button class="btn btn-gold" onclick="importWallet()">Importar</button>
+          <div id="wImportResult"></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- SEND -->
+    <div class="page" id="page-send">
+      <h1>Enviar PRO</h1>
+      <p class="sub">Transfiere monedas a otra direccion o nombre CNS</p>
+      <div class="panel"><div class="body" style="max-width:500px">
+        <div class="alert" id="sendAlert"></div>
+        <div class="form-group"><label>Desde (Wallet ID)</label>
+          <select id="sendFrom"></select>
+        </div>
+        <div class="form-group"><label>Para (direccion P... o nombre.pro)</label>
+          <input id="sendTo" placeholder="Pc60444... o alice.pro">
+        </div>
+        <div class="form-group"><label>Cantidad (PRO)</label>
+          <input id="sendAmount" type="number" step="0.01" min="0.01" placeholder="10">
+        </div>
+        <div class="form-group"><label>Mensaje (opcional, max 280 caracteres, se almacena en cadena)</label>
+          <input id="sendMessage" placeholder="ej: Gracias por el pago!" maxlength="280">
+        </div>
+        <div class="form-group"><label>Contrasena de la cartera</label>
+          <input id="sendPass" type="password" placeholder="••••">
+        </div>
+        <button class="btn btn-gold" onclick="sendTx()">Enviar Transaccion</button>
+      </div></div>
+      <div class="panel"><h3>Historial de envios</h3><div class="body"><div id="sendHistory" class="empty">Aun no has enviado transacciones en esta sesion</div></div></div>
+    </div>
+
+    <!-- RECEIVE -->
+    <div class="page" id="page-receive">
+      <h1>Recibir PRO</h1>
+      <p class="sub">Comparte tu direccion para recibir pagos</p>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="panel"><div class="body" style="text-align:center">
+          <div id="receiveSelect"><div class="form-group"><label>Selecciona una cartera</label><select id="receiveWallet" onchange="showReceive()"></select></div></div>
+          <div id="receiveAddr" style="display:none">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Tu direccion:</div>
+            <div id="receiveAddress" class="mono addr" style="font-size:14px;word-break:break-all;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:10px"></div>
+            <button class="btn btn-outline btn-sm" onclick="copyRecv()">📋 Copiar direccion</button>
+          </div>
+        </div></div>
+        <div class="panel"><h3>Balance</h3><div class="body" id="receiveBalance" style="text-align:center;font-size:28px;font-weight:700;color:var(--green)">0 PRO</div></div>
+      </div>
+    </div>
+
+    <!-- MINE -->
+    <div class="page" id="page-mine">
+      <h1>Minar PRO</h1>
+      <p class="sub">Genera nuevos bloques y gana la recompensa</p>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="panel"><div class="body">
+          <div class="form-group"><label>Minar para la cartera</label><select id="mineWallet"></select></div>
+          <button class="btn btn-gold" onclick="mineBlock()" id="mineBtn">⛏️ Minar un Bloque</button>
+          <div id="mineResult" style="margin-top:12px"></div>
+        </div></div>
+        <div class="panel"><h3>Info de Mineria</h3><div class="body">
+          <div id="mineInfo"></div>
+        </div></div>
+      </div>
+      <div class="panel"><h3>Ultimos bloques minados</h3><div class="body" id="mineBlocks"></div></div>
+    </div>
+
+    <!-- CNS -->
+    <div class="page" id="page-cns">
+      <h1>CNS Names <span>Crypto Name System</span></h1>
+      <p class="sub">Registra nombres legibles para tus direcciones. Envia a alice.pro</p>
+      <div class="tabs">
+        <button class="active" onclick="switchTab('cns','list')">Nombres</button>
+        <button onclick="switchTab('cns','register')">Registrar</button>
+        <button onclick="switchTab('cns','resolve')">Resolver</button>
+      </div>
+      <div class="tab-content active" id="tab-cns-list"><div id="cnsList"></div></div>
+      <div class="tab-content" id="tab-cns-register">
+        <div class="panel"><div class="body" style="max-width:400px">
+          <div class="form-group"><label>Nombre (sin .pro)</label><input id="cnsRegName" placeholder="ej: alice"></div>
+          <div class="form-group"><label>Direccion P...</label><input id="cnsRegAddr" placeholder="Pc60444..."></div>
+          <button class="btn btn-gold" onclick="cnsRegister()">Registrar Nombre</button>
+          <div id="cnsRegResult"></div>
+        </div></div>
+      </div>
+      <div class="tab-content" id="tab-cns-resolve">
+        <div class="panel"><div class="body" style="max-width:400px">
+          <div class="form-group"><label>Nombre a resolver</label><input id="cnsResName" placeholder="alice o alice.pro"></div>
+          <button class="btn btn-outline" onclick="cnsResolve()">Resolver</button>
+          <div id="cnsResResult"></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- NETWORK -->
+    <div class="page" id="page-network">
+      <h1>Red <span>P2P Network</span></h1>
+      <p class="sub">Gestiona las conexiones con otros nodos. Funciona con RadminVPN, Hamachi, LAN.</p>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="panel"><h3>Conectar a par</h3><div class="body">
+          <div class="form-group"><label>Direccion del peer (ws://ip:puerto)</label>
+            <input id="netPeerUrl" placeholder="ws://192.168.1.2:6001">
+          </div>
+          <button class="btn btn-gold" onclick="connectPeer()">Conectar</button>
+          <div id="netConnResult"></div>
+        </div></div>
+        <div class="panel"><h3>Info</h3><div class="body" id="netInfo"></div></div>
+      </div>
+      <div class="panel"><h3>Pares conectados</h3><div class="body" id="netPeers"></div></div>
+    </div>
+
+    <!-- EXPLORER -->
+    <div class="page" id="page-explorer">
+      <h1>Explorador <span>Blockchain Explorer</span></h1>
+      <p class="sub">Navega por la cadena de bloques, transacciones y UTXOs</p>
+      <div class="tabs">
+        <button class="active" onclick="switchTab('explorer','blocks')">Bloques</button>
+        <button onclick="switchTab('explorer','utxos')">UTXOs</button>
+        <button onclick="switchTab('explorer','pool')">Mempool</button>
+        <button onclick="switchTab('explorer','rich')">Rich List</button>
+      </div>
+      <div class="tab-content active" id="tab-explorer-blocks"><div id="expBlocks"></div></div>
+      <div class="tab-content" id="tab-explorer-utxos"><div id="expUtxos"></div></div>
+      <div class="tab-content" id="tab-explorer-pool"><div id="expPool"></div></div>
+      <div class="tab-content" id="tab-explorer-rich"><div id="expRich"></div></div>
+    </div>
+    <!-- SUPPORT -->
+    <div class="page" id="page-support">
+      <h1>Soporte <span>Support Tickets</span></h1>
+      <p class="sub">Crea un ticket de soporte o revisa el estado de tus solicitudes</p>
+      <!-- Ticket list / create -->
+      <div id="supportMain">
+        <div class="tabs">
+          <button class="active" onclick="switchTab('support','list')">Mis Tickets</button>
+          <button onclick="switchTab('support','create')">Nuevo Ticket</button>
+        </div>
+        <div class="tab-content active" id="tab-support-list"><div id="supportList"></div></div>
+        <div class="tab-content" id="tab-support-create">
+          <div class="panel"><div class="body" style="max-width:500px">
+            <div class="alert" id="supportAlert"></div>
+            <div class="form-group"><label>Asunto</label><input id="supportSubject" placeholder="ej: No recibi mi transaccion"></div>
+            <div class="form-group"><label>Mensaje</label><textarea id="supportMessage" rows="4" style="width:100%;padding:10px 14px;background:#0f1522;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;resize:vertical" placeholder="Describe tu problema..."></textarea></div>
+            <div class="form-group"><label>ID de Transaccion (opcional)</label><input id="supportTxId" placeholder="txid..."></div>
+            <button class="btn btn-gold" onclick="createTicket()">Enviar Ticket</button>
+          </div></div>
+        </div>
+      </div>
+      <!-- Chat view (hidden by default) -->
+      <div id="supportChat" style="display:none">
+        <button class="btn btn-outline btn-sm" onclick="closeChat()" style="margin-bottom:12px">← Volver a Tickets</button>
+        <div class="panel">
+          <h3 id="chatHeader">Ticket</h3>
+          <div class="body">
+            <div class="tabs">
+              <button class="active" onclick="switchTab('support','chat-messages')">Conversacion</button>
+              <button onclick="switchTab('support','chat-info')">Detalles</button>
+            </div>
+            <div class="tab-content active" id="tab-support-chat-messages">
+              <div id="chatMessages" style="max-height:400px;overflow-y:auto;padding:10px 0"></div>
+              <div style="display:flex;gap:10px;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+                <input id="chatInput" placeholder="Escribe tu mensaje..." style="flex:1" onkeydown="if(event.key==='Enter')sendChat()">
+                <button class="btn btn-gold btn-sm" onclick="sendChat()">Enviar</button>
+              </div>
+            </div>
+            <div class="tab-content" id="tab-support-chat-info">
+              <div id="chatDetails"></div>
+              <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap" id="chatActions"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PROFILE -->
+    <div class="page" id="page-profile">
+      <h1>Mi Perfil <span id="profileName"></span></h1>
+      <p class="sub">Informacion de tu cuenta y configuracion</p>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="panel"><h3>Informacion</h3><div class="body" id="profileInfo"></div></div>
+        <div class="panel"><h3>Cambiar Contrasena</h3><div class="body">
+          <div class="alert" id="profileAlert"></div>
+          <div class="form-group"><label>Contrasena actual</label><input id="profPass" type="password" placeholder="••••"></div>
+          <div class="form-group"><label>Nueva contrasena (min 4)</label><input id="profNewPass" type="password" placeholder="••••"></div>
+          <div class="form-group"><label>Confirmar nueva contrasena</label><input id="profNewPass2" type="password" placeholder="••••"></div>
+          <button class="btn btn-gold" onclick="changePassword()">Cambiar Contrasena</button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div class="page" id="page-admin">
+      <h1>Panel Admin</h1>
+      <p class="sub">Administracion del nodo BlackCOIN</p>
+      <div class="tabs">
+        <button class="active" onclick="adminTab('stats')">Estadisticas</button>
+        <button onclick="adminTab('users')">Usuarios</button>
+        <button onclick="adminTab('tickets')">Tickets</button>
+        <button onclick="adminTab('logs')">Logs</button>
+        <button onclick="adminTab('sessions')">Sesiones</button>
+        <button onclick="adminTab('terminal')">Terminal</button>
+      </div>
+      <div class="tab-content active" id="tab-admin-stats"><div id="adminStats"></div></div>
+      <div class="tab-content" id="tab-admin-users"><div id="adminUsers"></div></div>
+      <div class="tab-content" id="tab-admin-tickets"><div id="adminTickets"></div></div>
+      <div class="tab-content" id="tab-admin-logs"><div id="adminLogs"></div></div>
+      <div class="tab-content" id="tab-admin-sessions"><div id="adminSessions"></div></div>
+      <div class="tab-content" id="tab-admin-terminal">
+        <div class="panel"><h3>⚡ Terminal Admin</h3><div class="body" style="padding:0">
+          <div id="terminalOutput" style="background:#0a0e17;padding:14px;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:13px;min-height:350px;max-height:500px;overflow-y:auto;line-height:1.5;white-space:pre-wrap;word-break:break-all"></div>
+          <div style="display:flex;border-top:1px solid var(--border);background:#0f1522">
+            <span style="padding:10px 6px 10px 14px;color:var(--green);font-family:monospace;font-size:13px;font-weight:700">$</span>
+            <input id="terminalInput" placeholder="Escribe un comando (help para ayuda)..." style="border:none;background:transparent;flex:1;padding:10px 6px;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:13px" autofocus onkeydown="if(event.key==='Enter')runTerminalCmd()">
+            <button class="btn btn-sm" style="background:var(--green);color:#000;border-radius:0;margin:6px" onclick="runTerminalCmd()">Ejecutar</button>
+            <button class="btn btn-sm btn-outline" style="border-radius:0;margin:6px" onclick="clearTerminal()">Limpiar</button>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<button class="help-btn" id="helpBtn" onclick="toggleHelp()">?</button>
+<div class="help-tooltip" id="helpTooltip">
+  <button class="close-help" onclick="toggleHelp()">✕</button>
+  <h4 id="helpTitle">Ayuda</h4>
+  <div id="helpContent"></div>
+</div>
+
+<script>
+const API = '/api/v1';
+let wallets = [], blocks = [], utxos = [], peers = [], pool = [], names = [], richlist = [], tickets = [];
+let sendHistory = [];
+let authToken = sessionStorage.getItem('blackcoin_token') || '';
+let authUser = sessionStorage.getItem('blackcoin_user') || '';
+let authIsAdmin = sessionStorage.getItem('blackcoin_admin') === 'true';
+let currentChatId = null;
+
+function _(id){return document.getElementById(id)}
+function qs(s){return document.querySelector(s)}
+
+// === NAVIGATION ===
+function nav(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));
+  _('page-'+page).classList.add('active');
+  document.querySelector(`.nav a[href="#${page}"]`).classList.add('active');
+  toggleSidebar(true);
+  loadPage(page);
+  _('helpTooltip').classList.remove('show');
+}
+function toggleSidebar(force){
+  const s=_('sidebar');
+  if(force===true) s.classList.remove('open');
+  else s.classList.toggle('open');
+}
+function switchTab(page,tab){
+  const container = _('page-'+page);
+  if(!container) return;
+  container.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  container.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  const btn = container.querySelector(`button[onclick*="'${tab}'"]`);
+  if(btn) btn.classList.add('active');
+  const tabEl = _(`tab-${page}-${tab}`);
+  if(tabEl) tabEl.classList.add('active');
+  loadPage(page+'-'+tab);
+}
+function adminTab(tab){
+  document.querySelectorAll('#page-admin .tabs button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#page-admin .tab-content').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  _('tab-admin-'+tab).classList.add('active');
+  loadPage('admin-'+tab);
+}
+
+// === API HELPERS ===
+async function api(url,opts){
+  const headers = {'Content-Type':'application/json'};
+  if(authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  const r = await fetch(API+url,{headers,...opts});
+  const j = await r.json();
+  if(!r.ok) throw new Error(j.error||'HTTP '+r.status);
+  return j;
+}
+function fmtHash(h){return h?h.substring(0,14)+'...':'-'}
+function fmtAddr(a){return a?a.substring(0,10)+'...':'-'}
+function fmtAmt(n){return (n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtTime(ts){
+  if(!ts)return'Genesis';
+  const d=ts<1e10?new Date(ts*1000):new Date(ts);
+  return d.toLocaleString();
+}
+function copyText(t){navigator.clipboard.writeText(t);showAlert(null,'Copiado!','success')}
+
+// === AUTH ===
+function loginTab(tab){
+  document.querySelectorAll('#loginOverlay .tabs button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#loginOverlay .tab-content').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  _('login-tab-'+tab).classList.add('active');
+}
+async function doLogin(){
+  const user=_('loginUser').value.trim();
+  const pass=_('loginPass').value;
+  if(!user||!pass){_('loginResult').innerHTML='<div class="alert alert-show alert-error">Completa todos los campos</div>';return}
+  try{
+    const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pass})});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'Login failed');
+    authToken=j.token;authUser=j.username;authIsAdmin=j.isAdmin;
+    sessionStorage.setItem('blackcoin_token',j.token);
+    sessionStorage.setItem('blackcoin_user',j.username);
+    sessionStorage.setItem('blackcoin_admin',j.isAdmin?'true':'false');
+    _('loginOverlay').classList.add('hidden');
+    _('loginResult').innerHTML='';
+    updateNav();
+    loadPage('dashboard');
+  }catch(e){_('loginResult').innerHTML='<div class="alert alert-show alert-error">'+e.message+'</div>'}
+}
+async function doRecover(){
+  const user=_('recoverUser').value.trim();
+  if(!user){_('recoverResult').innerHTML='<div class="alert alert-show alert-error">Introduce tu usuario</div>';return}
+  try{
+    const r=await fetch(API+'/auth/recover-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user})});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'Error');
+    _('recoverResult').innerHTML='<div class="alert alert-show alert-success">Ticket de recuperacion creado. Un admin te atenderá.</div>';
+    _('recoverUser').value='';
+  }catch(e){_('recoverResult').innerHTML='<div class="alert alert-show alert-error">'+e.message+'</div>'}
+}
+
+async function doRegister(){
+  const user=_('regUser').value.trim();
+  const email=_('regEmail').value.trim();
+  const pass=_('regPass').value;
+  const pass2=_('regPass2').value;
+  if(!user||!pass){_('regResult').innerHTML='<div class="alert alert-show alert-error">Completa todos los campos</div>';return}
+  if(pass!==pass2){_('regResult').innerHTML='<div class="alert alert-show alert-error">Las contrasenas no coinciden</div>';return}
+  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){_('regResult').innerHTML='<div class="alert alert-show alert-error">Correo electronico no valido</div>';return}
+  try{
+    const r=await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pass,email:email||undefined})});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'Registration failed');
+    authToken=j.token;authUser=j.username;authIsAdmin=j.isAdmin;
+    sessionStorage.setItem('blackcoin_token',j.token);
+    sessionStorage.setItem('blackcoin_user',j.username);
+    sessionStorage.setItem('blackcoin_admin',j.isAdmin?'true':'false');
+    _('loginOverlay').classList.add('hidden');
+    _('regResult').innerHTML='';
+    updateNav();
+    loadPage('dashboard');
+  }catch(e){_('regResult').innerHTML='<div class="alert alert-show alert-error">'+e.message+'</div>'}
+}
+async function doLogout(){
+  try{await fetch(API+'/auth/logout',{method:'POST',headers:{'Authorization':'Bearer '+authToken}})}catch(e){}
+  authToken='';authUser='';authIsAdmin=false;
+  sessionStorage.removeItem('blackcoin_token');
+  sessionStorage.removeItem('blackcoin_user');
+  sessionStorage.removeItem('blackcoin_admin');
+  _('loginOverlay').classList.remove('hidden');
+  updateNav();
+  nav('dashboard');
+}
+function updateNav(){
+  _('navProfile').style.display = authUser ? 'block' : 'none';
+  _('navAdmin').style.display = authIsAdmin ? 'block' : 'none';
+}
+async function checkAuth(){
+  if(!authToken) return false;
+  try{
+    const r=await fetch(API+'/auth/me',{headers:{'Authorization':'Bearer '+authToken}});
+    const j=await r.json();
+    if(!r.ok) throw new Error('unauth');
+    authUser=j.username;authIsAdmin=j.isAdmin;
+    sessionStorage.setItem('blackcoin_user',j.username);
+    sessionStorage.setItem('blackcoin_admin',j.isAdmin?'true':'false');
+    _('loginOverlay').classList.add('hidden');
+    updateNav();
+    return true;
+  }catch(e){
+    authToken='';authUser='';authIsAdmin=false;
+    sessionStorage.removeItem('blackcoin_token');
+    sessionStorage.removeItem('blackcoin_user');
+    sessionStorage.removeItem('blackcoin_admin');
+    return false;
+  }
+}
+
+function showAlert(el,msg,type){
+  const a=el||_('sendAlert');if(!a)return;
+  a.textContent=msg;a.className='alert alert-show alert-'+type;
+  setTimeout(()=>{a.className='alert'},5000);
+}
+
+// === PAGE LOADERS ===
+function loadPage(page){
+  switch(page){
+    case'dashboard':loadDashboard();break;
+    case'profile':loadProfile();break;
+    case'wallet-list':loadWalletList();break;
+    case'explorer-blocks':loadExpBlocks();break;
+    case'explorer-utxos':loadExpUtxos();break;
+    case'explorer-pool':loadExpPool();break;
+    case'explorer-rich':loadExpRich();break;
+    case'cns-list':loadCnsList();break;
+    case'network':loadNetwork();break;
+    case'mine':loadMine();break;
+    case'send':loadSendForm();break;
+    case'receive':loadReceive();break;
+    case'support-list':loadSupportList();break;
+    case'support-create':break;
+    case'support-chat-messages':if(currentChatId)loadChat(currentChatId);break;
+    case'support-chat-info':if(currentChatId)loadChatInfo(currentChatId);break;
+    case'admin-stats':loadAdminStats();break;
+    case'admin-users':loadAdminUsers();break;
+    case'admin-tickets':loadAdminTickets();break;
+    case'admin-logs':loadAdminLogs();break;
+    case'admin-sessions':loadAdminSessions();break;
+    case'admin-terminal':loadTerminal();break;
+    default:break;
+  }
+}
+
+// === DASHBOARD ===
+async function loadDashboard(){
+  try{
+    const info=await api('/info');
+    const b=await api('/blocks');
+    blocks=b.blocks||[];
+    _('dashStats').innerHTML=`
+      <div class="card"><div class="lbl">Bloques</div><div class="val gold">${info.blocks}</div></div>
+      <div class="card"><div class="lbl">Transacciones</div><div class="val green">${info.transactions}</div></div>
+      <div class="card"><div class="lbl">UTXOs</div><div class="val blue">${info.utxos}</div></div>
+      <div class="card"><div class="lbl">Mempool</div><div class="val">${info.poolSize}</div></div>
+      <div class="card"><div class="lbl">Pares</div><div class="val">${info.peers}</div></div>
+      <div class="card"><div class="lbl">Ultimo Bloque</div><div class="val" style="font-size:16px">#${info.latestBlock}</div></div>`;
+    _('dashBlocks').innerHTML=blocks.length?`<table><tr><th>#</th><th>Hash</th><th>Txs</th><th>Dificultad</th></tr>${
+      blocks.slice(-10).reverse().map(b=>`<tr><td>#${b.index}</td><td class="mono hash">${fmtHash(b.hash)}</td><td>${(b.data||[]).length}</td><td>${b.difficulty}</td></tr>`).join('')
+    }</table>`:'<div class="empty">Sin bloques</div>';
+  }catch(e){_('dashStats').innerHTML=`<div class="card"><div class="lbl">Error</div><div class="val red">${e.message}</div></div>`}
+}
+
+// === WALLET ===
+async function loadWalletList(){
+  try{
+    wallets=await api('/wallets');
+    const r=await api('/richlist');
+    richlist=r.wallets||[];
+    if(!wallets.length){_('walletList').innerHTML='<div class="empty">No hay carteras. Crea una en la pestania "Crear"</div>';return}
+    _('walletList').innerHTML=`<table><tr><th>Nombre</th><th>Direccion</th><th>Balance</th><th>Accion</th></tr>${
+      wallets.map(w=>{
+        const bal=richlist.find(r=>r.address===w.address)?.balance||0;
+        return `<tr><td>${w.name}</td><td class="mono addr" title="${w.address}">${fmtAddr(w.address)} <span class="copy-btn" onclick="copyText('${w.address}')">📋</span></td>
+        <td style="color:var(--green);font-weight:600">${fmtAmt(bal)} PRO</td>
+        <td><button class="btn btn-outline btn-sm" onclick="exportWallet('${w.id}')">Exportar</button></td></tr>`;
+      }).join('')
+    }</table>`;
+  }catch(e){_('walletList')='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function createWallet(){
+  const name=_('wCreateName').value.trim()||'default';
+  const pass=_('wCreatePass').value;
+  const pass2=_('wCreatePass2').value;
+  if(!pass||pass.length<4){_('wCreateResult').innerHTML='<div class="alert alert-show alert-error">La contrasena debe tener al menos 4 caracteres</div>';return}
+  if(pass!==pass2){_('wCreateResult').innerHTML='<div class="alert alert-show alert-error">Las contrasenas no coinciden</div>';return}
+  try{
+    const w=await api('/wallets/create',{method:'POST',body:JSON.stringify({name,password:pass})});
+    _('wCreateResult').innerHTML=`<div class="alert alert-show alert-success">Cartera "${w.name}" creada! Direccion: ${fmtAddr(w.address)}</div>`;
+    _('wCreateName').value='';_('wCreatePass').value='';_('wCreatePass2').value='';
+    loadWalletList();
+  }catch(e){_('wCreateResult').innerHTML='<div class="alert alert-show alert-error">'+e.message+'</div>'}
+}
+async function exportWallet(id){
+  const pass=prompt('Introduce la contrasena de la cartera:');
+  if(!pass)return;
+  try{
+    const r=await api('/wallets/export',{method:'POST',body:JSON.stringify({walletId:id,password:pass})});
+    alert('Clave privada: '+r.privateKey+'\n\nGuarda esta clave en un lugar seguro. Nunca la compartas.');
+  }catch(e){alert('Error: '+e.message)}
+}
+async function importWallet(){
+  const key=_('wImportKey').value.trim();
+  const name=_('wImportName').value.trim()||'imported';
+  const pass=_('wImportPass').value;
+  if(!key||key.length!==64){_('wImportResult').innerHTML='<div class="alert alert-show alert-error">La clave debe tener 64 caracteres hex</div>';return}
+  if(!pass||pass.length<4){_('wImportResult').innerHTML='<div class="alert alert-show alert-error">La contrasena debe tener al menos 4 caracteres</div>';return}
+  try{
+    const w=await api('/wallets/import',{method:'POST',body:JSON.stringify({privateKey:key,name,password:pass})});
+    _('wImportResult').innerHTML=`<div class="alert alert-show alert-success">Cartera "${w.name}" importada! Direccion: ${fmtAddr(w.address)}</div>`;
+    _('wImportKey').value='';_('wImportName').value='';_('wImportPass').value='';
+    loadWalletList();
+  }catch(e){_('wImportResult').innerHTML='<div class="alert alert-show alert-error">'+e.message+'</div>'}
+}
+
+// === SEND ===
+async function loadSendForm(){
+  try{
+    const r=await api('/richlist');
+    wallets=r.wallets||[];
+    const sel=_('sendFrom');
+    sel.innerHTML=wallets.map(w=>`<option value="${w.id}">${w.name} (${fmtAmt(w.balance)} PRO)</option>`).join('')||'<option>-- No hay carteras --</option>';
+  }catch(e){}
+}
+async function sendTx(){
+  const from=_('sendFrom').value;
+  const to=_('sendTo').value.trim();
+  const amt=parseFloat(_('sendAmount').value);
+  const msg=_('sendMessage').value.trim();
+  const pass=_('sendPass').value;
+  if(!from||!to||!amt||!pass){showAlert(_('sendAlert'),'Completa todos los campos','error');return}
+  try{
+    const body={walletId:from,password:pass,to,amount:amt};
+    if(msg) body.message=msg;
+    const tx=await api('/transactions/send',{method:'POST',body:JSON.stringify(body)});
+    sendHistory.push(tx);
+    _('sendHistory').innerHTML=`<table><tr><th>TxID</th><th>Mensaje</th><th>Estado</th></tr>${
+      sendHistory.map(t=>`<tr><td class="mono hash">${fmtHash(t.txid||t.txId||'')}</td><td class="mono" style="color:var(--muted)">${t.message||'-'}</td><td><span class="badge badge-green">Enviado</span></td></tr>`).join('')
+    }</table>`;
+    showAlert(_('sendAlert'),'Transaccion enviada! TxID: '+(tx.txid||''),'success');
+    _('sendTo').value='';_('sendAmount').value='';_('sendPass').value='';_('sendMessage').value='';
+  }catch(e){showAlert(_('sendAlert'),e.message,'error')}
+}
+
+// === RECEIVE ===
+async function loadReceive(){
+  try{
+    const r=await api('/richlist');
+    wallets=r.wallets||[];
+    const sel=_('receiveWallet');
+    sel.innerHTML=wallets.map(w=>`<option value="${w.address}">${w.name}</option>`).join('')||'<option>Crea una cartera primero</option>';
+    showReceive();
+  }catch(e){}
+}
+function showReceive(){
+  const sel=_('receiveWallet');
+  const addr=sel.value;
+  if(addr&&addr.startsWith('P')){
+    _('receiveAddr').style.display='block';
+    _('receiveAddress').textContent=addr;
+    const w=wallets.find(w=>w.address===addr);
+    _('receiveBalance').textContent=fmtAmt(w?.balance||0)+' PRO';
+  }else{
+    _('receiveAddr').style.display='none';
+    _('receiveBalance').textContent='0 PRO';
+  }
+}
+function copyRecv(){copyText(_('receiveAddress').textContent)}
+
+// === MINE ===
+async function loadMine(){
+  try{
+    const r=await api('/richlist');
+    wallets=r.wallets||[];
+    const sel=_('mineWallet');
+    sel.innerHTML=wallets.map(w=>`<option value="${w.address}">${w.name} (${fmtAmt(w.balance)} PRO)</option>`).join('');
+    const info=await api('/info');
+    _('mineInfo').innerHTML=`
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">Dificultad:</span> <strong>${info.latestBlock?0:0}</strong></div>
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">Ultimo bloque:</span> <strong>#${info.latestBlock}</strong></div>
+      <div><span style="color:var(--muted)">Recompensa actual:</span> <strong style="color:var(--gold)">50 PRO</strong></div>`;
+  }catch(e){}
+}
+async function mineBlock(){
+  const addr=_('mineWallet').value;
+  if(!addr||!addr.startsWith('P')){_('mineResult').innerHTML='<div class="alert alert-show alert-error">Selecciona una cartera primero</div>';return}
+  const btn=_('mineBtn');
+  btn.disabled=true;btn.textContent='⛏️ Minando...';
+  _('mineResult').innerHTML='<div class="alert alert-show alert-info">Minando bloque...</div>';
+  try{
+    const block=await api('/mine',{method:'POST',body:JSON.stringify({minerAddress:addr})});
+    _('mineResult').innerHTML=`<div class="alert alert-show alert-success">Bloque #${block.blockIndex} minado! Hash: ${fmtHash(block.blockHash)}</div>`;
+    loadMineBlocks();
+  }catch(e){_('mineResult').innerHTML=`<div class="alert alert-show alert-error">${e.message}</div>`}
+  finally{btn.disabled=false;btn.textContent='⛏️ Minar un Bloque'}
+}
+async function loadMineBlocks(){
+  try{
+    const b=await api('/blocks');
+    _('mineBlocks').innerHTML=`<table><tr><th>#</th><th>Hash</th><th>Txs</th></tr>${
+      (b.blocks||[]).slice(-10).reverse().map(b=>`<tr><td>#${b.index}</td><td class="mono hash">${fmtHash(b.hash)}</td><td>${(b.data||[]).length}</td></tr>`).join('')
+    }</table>`;
+  }catch(e){}
+}
+
+// === CNS ===
+async function loadCnsList(){
+  try{
+    const d=await api('/names');
+    names=d.names||[];
+    _('cnsList').innerHTML=names.length?`<table><tr><th>Nombre</th><th>Direccion</th><th>Creado</th></tr>${
+      names.map(n=>`<tr><td><strong>${n.name}.pro</strong></td><td class="mono addr">${fmtAddr(n.address)}</td><td>${new Date(n.createdAt).toLocaleDateString()}</td></tr>`).join('')
+    }</table>`:'<div class="empty">No hay nombres registrados</div>';
+  }catch(e){_('cnsList').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function cnsRegister(){
+  const name=_('cnsRegName').value.trim();
+  const addr=_('cnsRegAddr').value.trim();
+  if(!name||!addr){_('cnsRegResult').innerHTML='<div class="alert alert-show alert-error">Completa todos los campos</div>';return}
+  try{
+    const d=await api('/names/register',{method:'POST',body:JSON.stringify({name,address:addr})});
+    _('cnsRegResult').innerHTML=`<div class="alert alert-show alert-success">${d.name} registrado!</div>`;
+    _('cnsRegName').value='';_('cnsRegAddr').value='';
+  }catch(e){_('cnsRegResult').innerHTML=`<div class="alert alert-show alert-error">${e.message}</div>`}
+}
+async function cnsResolve(){
+  const name=_('cnsResName').value.trim();
+  if(!name){_('cnsResResult').innerHTML='<div class="alert alert-show alert-error">Introduce un nombre</div>';return}
+  try{
+    const d=await api('/names/resolve/'+encodeURIComponent(name));
+    _('cnsResResult').innerHTML=`<div class="alert alert-show alert-success">${d.name} -> ${d.address}</div>`;
+  }catch(e){_('cnsResResult').innerHTML=`<div class="alert alert-show alert-error">${e.message}</div>`}
+}
+
+// === SUPPORT - LIST & CREATE ===
+async function loadSupportList(){
+  try{
+    const d=await api('/support/tickets');
+    tickets=d.tickets||[];
+    _('supportList').innerHTML=tickets.length?`<table><tr><th>ID</th><th>Asunto</th><th>Estado</th><th>Mensajes</th><th>Actualizado</th><th>Accion</th></tr>${
+      tickets.map(t=>{
+        const replies=t.replies?t.replies.length:0;
+        const lastUpdate=t.updatedAt?new Date(t.updatedAt).toLocaleDateString():new Date(t.createdAt).toLocaleDateString();
+        return `<tr>
+          <td class="mono hash">${fmtHash(t.id)}</td>
+          <td><strong>${t.subject}</strong></td>
+          <td><span class="badge ${t.status==='open'?'badge-gray':'badge-green'}">${t.status}</span></td>
+          <td>${replies}</td>
+          <td>${lastUpdate}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="openChat('${t.id}')">${t.status==='open'?'💬 Chat':'Ver'}</button></td>
+        </tr>`;
+      }).join('')
+    }</table>`:'<div class="empty">No hay tickets de soporte. Crea uno en "Nuevo Ticket"</div>';
+  }catch(e){_('supportList').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function createTicket(){
+  const sub=_('supportSubject').value.trim();
+  const msg=_('supportMessage').value.trim();
+  const txId=_('supportTxId').value.trim();
+  if(!sub||!msg){showAlert(_('supportAlert'),'Completa el asunto y el mensaje','error');return}
+  try{
+    const body={subject:sub,message:msg};
+    if(txId) body.txId=txId;
+    const d=await api('/support/ticket',{method:'POST',body:JSON.stringify(body)});
+    showAlert(_('supportAlert'),'Ticket creado! Abriendo chat...','success');
+    _('supportSubject').value='';_('supportMessage').value='';_('supportTxId').value='';
+    setTimeout(()=>openChat(d.ticket.id),500);
+  }catch(e){showAlert(_('supportAlert'),e.message,'error')}
+}
+
+// === SUPPORT - CHAT ===
+function openChat(ticketId){
+  currentChatId=ticketId;
+  _('supportMain').style.display='none';
+  _('supportChat').style.display='block';
+  _('chatHeader').textContent='Ticket: '+ticketId;
+  loadChat(ticketId);
+  loadChatInfo(ticketId);
+}
+function closeChat(){
+  currentChatId=null;
+  _('supportChat').style.display='none';
+  _('supportMain').style.display='block';
+  loadSupportList();
+}
+async function loadChat(ticketId){
+  try{
+    const t=await api('/support/tickets/'+ticketId);
+    const msgs=_('chatMessages');
+    let html='';
+    if(t.message) html+=renderMsg('USER',t.username,t.message,t.createdAt);
+    if(t.replies) t.replies.forEach(r=>{
+      const label=r.type==='admin'?'ADMIN':r.type==='system'?'SYSTEM':'USER';
+      const cls=r.type==='admin'?'admin':r.type==='system'?'system':'user';
+      const displayName=r.type==='admin'?'Admin ['+r.by+']':r.type==='system'?'Sistema':t.username;
+      html+=renderMsg(cls,displayName,r.message,r.createdAt);
+    });
+    msgs.innerHTML=html||'<div class="empty">Sin mensajes</div>';
+    msgs.scrollTop=msgs.scrollHeight;
+    _('chatInput').disabled=t.status==='closed';
+    _('chatInput').placeholder=t.status==='closed'?'Ticket cerrado':'Escribe tu mensaje...';
+  }catch(e){_('chatMessages').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+function renderMsg(cls,author,msg,ts){
+  return `<div class="chat-msg ${cls}"><div class="chat-bubble"><div class="chat-author">${author}</div>${escapeHtml(msg)}<div class="chat-time">${fmtTime(ts)}</div></div></div>`;
+}
+function escapeHtml(s){
+  const d=document.createElement('div');
+  d.textContent=s;
+  return d.innerHTML;
+}
+async function loadChatInfo(ticketId){
+  try{
+    const t=await api('/support/tickets/'+ticketId);
+    _('chatDetails').innerHTML=`
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">ID:</span> <span class="mono">${t.id}</span></div>
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">Estado:</span> <span class="badge ${t.status==='open'?'badge-gray':'badge-green'}">${t.status}</span></div>
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">Creado por:</span> ${t.username}</div>
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">Asunto:</span> <strong>${t.subject}</strong></div>
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">Creado:</span> ${new Date(t.createdAt).toISOString()}</div>
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">Actualizado:</span> ${t.updatedAt?new Date(t.updatedAt).toISOString():'Nunca'}</div>
+      ${t.txId?`<div style="margin-bottom:8px"><span style="color:var(--muted)">TxId:</span> <span class="mono hash">${t.txId}</span></div>`:''}
+      <div style="margin-bottom:8px"><span style="color:var(--muted)">Mensajes:</span> ${(t.replies||[]).length+1}</div>`;
+    // Actions
+    let actions='';
+    if(authIsAdmin){
+      if(t.status==='open'){
+        actions+=`<button class="btn btn-gold btn-sm" onclick="adminReplyFromChat()">Responder</button>`;
+        actions+=`<button class="btn btn-outline btn-sm" onclick="adminCloseFromChat('${t.id}')">Cerrar Ticket</button>`;
+      } else {
+        actions+=`<button class="btn btn-outline btn-sm" onclick="adminReopenFromChat('${t.id}')">Reabrir Ticket</button>`;
+      }
+      actions+=`<button class="btn btn-red btn-sm" onclick="adminDeleteFromChat('${t.id}')">Eliminar</button>`;
+    } else {
+      if(t.status==='open'){
+        const hasUserReply=(t.replies||[]).some(r=>r.type==='user');
+        if(hasUserReply||(t.replies||[]).length===0) actions+=`<button class="btn btn-gold btn-sm" onclick="userReplyFromChat()">Responder</button>`;
+      }
+      if(t.status==='closed'&&t.username===authUser){
+        actions+=`<button class="btn btn-outline btn-sm" onclick="adminReopenFromChat('${t.id}')">Reabrir</button>`;
+      }
+    }
+    _('chatActions').innerHTML=actions;
+  }catch(e){_('chatDetails').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function sendChat(){
+  const msg=_('chatInput').value.trim();
+  if(!msg||!currentChatId)return;
+  _('chatInput').value='';
+  try{
+    if(authIsAdmin){
+      await api('/support/tickets/'+currentChatId+'/reply',{method:'POST',body:JSON.stringify({reply:msg,closeAfterReply:false})});
+    } else {
+      await api('/support/tickets/'+currentChatId+'/user-reply',{method:'POST',body:JSON.stringify({message:msg})});
+    }
+    loadChat(currentChatId);
+    loadChatInfo(currentChatId);
+  }catch(e){
+    _('chatInput').value=msg;
+    alert('Error: '+e.message);
+  }
+}
+function adminReplyFromChat(){
+  _('chatInput').focus();
+}
+function userReplyFromChat(){
+  _('chatInput').focus();
+}
+async function adminCloseFromChat(id){
+  if(!confirm('Cerrar este ticket?'))return;
+  try{
+    await api('/support/tickets/'+id+'/close',{method:'POST'});
+    loadChat(id);
+    loadChatInfo(id);
+  }catch(e){alert('Error: '+e.message)}
+}
+async function adminReopenFromChat(id){
+  try{
+    await api('/support/tickets/'+id+'/reopen',{method:'POST'});
+    loadChat(id);
+    loadChatInfo(id);
+  }catch(e){alert('Error: '+e.message)}
+}
+async function adminDeleteFromChat(id){
+  if(!confirm('Eliminar este ticket permanentemente?'))return;
+  try{
+    await api('/support/tickets/'+id,{method:'DELETE'});
+    closeChat();
+  }catch(e){alert('Error: '+e.message)}
+}
+
+// === PROFILE ===
+async function loadProfile(){
+  try{
+    const me=await api('/auth/me');
+    _('profileName').textContent='- '+authUser;
+    _('profileInfo').innerHTML=`
+      <div style="margin-bottom:10px"><span style="color:var(--muted)">Usuario:</span> <strong>${me.username}</strong></div>
+      <div style="margin-bottom:10px"><span style="color:var(--muted)">Rol:</span> <span class="badge ${me.isAdmin?'badge-green':'badge-gray'}">${me.isAdmin?'Admin':'Usuario'}</span></div>
+      <div style="margin-bottom:10px"><span style="color:var(--muted)">Correo:</span> <strong>${me.email||'No registrado'}</strong></div>
+      <div style="margin-bottom:10px"><span style="color:var(--muted)">Miembro desde:</span> ${new Date(me.createdAt).toLocaleDateString()}</div>
+      <div><span style="color:var(--muted)">Token:</span> <span class="mono hash">${fmtHash(authToken)}</span></div>`;
+  }catch(e){_('profileInfo').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function changePassword(){
+  const pass=_('profPass').value;
+  const newPass=_('profNewPass').value;
+  const newPass2=_('profNewPass2').value;
+  if(!pass||!newPass){showAlert(_('profileAlert'),'Completa todos los campos','error');return}
+  if(newPass!==newPass2){showAlert(_('profileAlert'),'Las contrasenas no coinciden','error');return}
+  if(newPass.length<4){showAlert(_('profileAlert'),'Minimo 4 caracteres','error');return}
+  try{
+    await api('/auth/change-password',{method:'POST',body:JSON.stringify({currentPassword:pass,newPassword:newPass})});
+    showAlert(_('profileAlert'),'Contrasena actualizada!','success');
+    _('profPass').value='';_('profNewPass').value='';_('profNewPass2').value='';
+  }catch(e){showAlert(_('profileAlert'),e.message,'error')}
+}
+
+// === ADMIN - STATS ===
+async function loadAdminStats(){
+  try{
+    const s=await api('/admin/stats');
+    const h=await api('/healthz');
+    _('adminStats').innerHTML=`
+      <div class="grid">
+        <div class="card"><div class="lbl">Bloques</div><div class="val gold">${s.node.blocks}</div></div>
+        <div class="card"><div class="lbl">Transacciones</div><div class="val green">${s.node.blocks*2||0}</div></div>
+        <div class="card"><div class="lbl">UTXOs</div><div class="val blue">${s.node.utxos}</div></div>
+        <div class="card"><div class="lbl">Mempool</div><div class="val">${s.node.poolSize}</div></div>
+        <div class="card"><div class="lbl">Wallets</div><div class="val">${s.node.wallets}</div></div>
+        <div class="card"><div class="lbl">Pares</div><div class="val">${s.node.peers}</div></div>
+      </div>
+      <div class="grid">
+        <div class="card"><div class="lbl">Usuarios</div><div class="val">${s.users.total}</div></div>
+        <div class="card"><div class="lbl">Admins</div><div class="val" style="color:var(--gold)">${s.users.admins}</div></div>
+        <div class="card"><div class="lbl">Tickets Abiertos</div><div class="val">${s.tickets.open}</div></div>
+        <div class="card"><div class="lbl">Tickets Cerrados</div><div class="val">${s.tickets.closed}</div></div>
+        <div class="card"><div class="lbl">Memoria</div><div class="val" style="font-size:14px">${(s.memory/1024/1024).toFixed(0)} MB</div></div>
+        <div class="card"><div class="lbl">Uptime</div><div class="val" style="font-size:14px">${Math.floor(s.uptime/60)}m</div></div>
+      </div>`;
+  }catch(e){_('adminStats').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+
+// === ADMIN - USERS ===
+async function loadAdminUsers(){
+  try{
+    const d=await api('/admin/users');
+    _('adminUsers').innerHTML=`<table><tr><th>Usuario</th><th>Rol</th><th>Email</th><th>Registro</th><th>Acciones</th></tr>${
+      d.users.map(u=>`<tr>
+        <td><strong>${u.username}</strong></td>
+        <td><span class="badge ${u.isAdmin?'badge-green':'badge-gray'}">${u.isAdmin?'Admin':'User'}</span></td>
+        <td style="font-size:12px;color:var(--muted)">${u.email||'<em>sin email</em>'}</td>
+        <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">
+          ${u.isAdmin
+            ? `<button class="btn btn-outline btn-sm" onclick="demoteAdmin('${u.username}')">Degradar</button>`
+            : `<button class="btn btn-outline btn-sm" onclick="makeAdmin('${u.username}')">Hacer Admin</button>`
+          }
+          <button class="btn btn-outline btn-sm" onclick="resetUserPass('${u.username}')">Reset Pass</button>
+          <button class="btn btn-outline btn-sm" onclick="setUserEmail('${u.username}')">Email</button>
+          ${u.username!==authUser?`<button class="btn btn-red btn-sm" onclick="deleteUser('${u.username}')">Eliminar</button>`:''}
+        </td>
+      </tr>`).join('')
+    }</table>`;
+  }catch(e){_('adminUsers').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function makeAdmin(u){
+  if(!confirm(`Promover a ${u} como admin?`))return;
+  try{await api('/admin/promote',{method:'POST',body:JSON.stringify({username:u})});loadAdminUsers()}catch(e){alert(e.message)}
+}
+async function demoteAdmin(u){
+  if(!confirm(`Degradar a ${u}?`))return;
+  try{await api('/admin/demote',{method:'POST',body:JSON.stringify({username:u})});loadAdminUsers()}catch(e){alert(e.message)}
+}
+async function deleteUser(u){
+  if(!confirm(`Eliminar usuario ${u}? Esta accion es irreversible.`))return;
+  try{await api('/admin/users/'+encodeURIComponent(u),{method:'DELETE'});loadAdminUsers()}catch(e){alert(e.message)}
+}
+async function resetUserPass(u){
+  const p=prompt('Nueva contrasena para '+u+':');
+  if(!p||p.length<4){alert('Minimo 4 caracteres');return}
+  try{await api('/admin/reset-password',{method:'POST',body:JSON.stringify({username:u,newPassword:p})});alert('Contrasena actualizada!');loadAdminUsers()}catch(e){alert(e.message)}
+}
+async function setUserEmail(u){
+  const e=prompt('Correo electronico para '+u+':');
+  if(e===null)return;
+  try{await api('/admin/set-email',{method:'POST',body:JSON.stringify({username:u,email:e})});alert('Email actualizado!');loadAdminUsers()}catch(e){alert(e.message)}
+}
+
+// === ADMIN - TICKETS ===
+async function loadAdminTickets(){
+  try{
+    const d=await api('/support/tickets');
+    _('adminTickets').innerHTML=`<table><tr><th>ID</th><th>Usuario</th><th>Asunto</th><th>Estado</th><th>Msgs</th><th>Accion</th></tr>${
+      d.tickets.map(t=>{
+        const rcount=(t.replies||[]).length;
+        return `<tr>
+          <td class="mono hash">${fmtHash(t.id)}</td>
+          <td>${t.username}</td>
+          <td><strong>${t.subject}</strong></td>
+          <td><span class="badge ${t.status==='open'?'badge-gray':'badge-green'}">${t.status}</span></td>
+          <td>${rcount}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="openChat('${t.id}');nav('support')">💬 Chat</button></td>
+        </tr>`;
+      }).join('')
+    }</table>`;
+  }catch(e){_('adminTickets').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+
+// === ADMIN - LOGS ===
+async function loadAdminLogs(){
+  try{
+    const d=await api('/admin/logs?count=100');
+    _('adminLogs').innerHTML=`<div style="background:#0a0e17;border-radius:8px;padding:12px;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:11px;max-height:500px;overflow-y:auto;line-height:1.6">${
+      (d.logs||[]).map(l=>escapeHtml(l)).join('<br>')
+    }</div><div style="padding:8px;color:var(--muted);font-size:12px;text-align:center">Ultimos ${d.count} logs</div>`;
+  }catch(e){_('adminLogs').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+
+// === ADMIN - SESSIONS ===
+async function loadAdminSessions(){
+  try{
+    const d=await api('/admin/sessions');
+    _('adminSessions').innerHTML=`<table><tr><th>Token</th><th>Usuario</th><th>Expira</th><th>Estado</th><th>Accion</th></tr>${
+      d.sessions.map(s=>{
+        const expired=Date.now()>new Date(s.expiresAt).getTime();
+        return `<tr>
+          <td class="mono hash">${fmtHash(s.token)}</td>
+          <td>${s.username}</td>
+          <td>${new Date(s.expiresAt).toLocaleString()}</td>
+          <td><span class="status-dot ${expired?'offline':'online'}"></span>${expired?'Expirado':'Activo'}</td>
+          <td>${expired?'':`<button class="btn btn-red btn-sm" onclick="revokeSession('${s.token}')">Revocar</button>`}</td>
+        </tr>`;
+      }).join('')
+    }</table>`;
+  }catch(e){_('adminSessions').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function revokeSession(t){
+  if(!confirm('Revocar esta sesion?'))return;
+  try{await api('/admin/sessions/'+encodeURIComponent(t),{method:'DELETE'});loadAdminSessions()}catch(e){alert(e.message)}
+}
+
+// === ADMIN - TERMINAL ===
+let terminalHistory=[], histIdx=-1;
+function loadTerminal(){
+  const out=_('terminalOutput');
+  if(!out.innerHTML) out.innerHTML='<span style="color:var(--muted)">╔═══ BlackCOIN Admin Terminal ═══╗</span>\n<span style="color:var(--muted)">║ Type <span style="color:var(--gold)">help</span> for available commands  ║</span>\n<span style="color:var(--muted)">╚════════════════════════════════╝</span>\n';
+  _('terminalInput').focus();
+}
+async function runTerminalCmd(){
+  const input=_('terminalInput');
+  const cmd=input.value.trim();
+  if(!cmd)return;
+  input.value='';
+  terminalHistory.push(cmd);
+  histIdx=terminalHistory.length;
+  appendTerminal(`<span style="color:var(--green)">$</span> ${escapeHtml(cmd)}`);
+  try{
+    const r=await api('/admin/terminal',{method:'POST',body:JSON.stringify({command:cmd})});
+    if(r.output) appendTerminal(r.output);
+    if(r.error) appendTerminal(`<span style="color:var(--red)">${escapeHtml(r.error)}</span>`);
+  }catch(e){
+    appendTerminal(`<span style="color:var(--red)">Error: ${escapeHtml(e.message)}</span>`);
+  }
+  const out=_('terminalOutput');
+  out.scrollTop=out.scrollHeight;
+}
+function appendTerminal(text){
+  const out=_('terminalOutput');
+  out.innerHTML+=text+'\n';
+  out.scrollTop=out.scrollHeight;
+}
+function clearTerminal(){
+  _('terminalOutput').innerHTML='<span style="color:var(--muted)">Terminal limpiada. Escribe <span style="color:var(--gold)">help</span> para ayuda.</span>\n';
+}
+// Terminal keyboard history navigation
+document.addEventListener('keydown',function(e){
+  const inp=_('terminalInput');
+  if(document.activeElement!==inp)return;
+  if(e.key==='ArrowUp'){
+    e.preventDefault();
+    if(histIdx>0){histIdx--;inp.value=terminalHistory[histIdx]||''}
+  }else if(e.key==='ArrowDown'){
+    e.preventDefault();
+    if(histIdx<terminalHistory.length-1){histIdx++;inp.value=terminalHistory[histIdx]||''}
+    else{histIdx=terminalHistory.length;inp.value=''}
+  }
+});
+
+// === NETWORK ===
+async function loadNetwork(){
+  try{
+    const p=await api('/peers');
+    peers=p.peers||[];
+    const info=await api('/info');
+    _('netPeers').innerHTML=peers.length?`<table><tr><th>Peer</th><th>Estado</th></tr>${
+      peers.map(p=>`<tr><td class="mono">${p}</td><td><span class="status-dot online"></span>Conectado</td></tr>`).join('')
+    }</table>`:'<div class="empty">No hay pares conectados</div>';
+    _('netInfo').innerHTML=`
+      <div><span class="status-dot online"></span>Nodo activo</div>
+      <div style="margin-top:8px;color:var(--muted);font-size:13px">
+        Puertos: HTTP 3001 | P2P 6001<br>
+        Compatible con RadminVPN, Hamachi, LAN<br>
+        Los peers en la misma red virtual se descubren automaticamente
+      </div>`;
+  }catch(e){_('netPeers').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function connectPeer(){
+  const url=_('netPeerUrl').value.trim();
+  if(!url){_('netConnResult').innerHTML='<div class="alert alert-show alert-error">Introduce una URL</div>';return}
+  try{
+    await api('/peers/connect',{method:'POST',body:JSON.stringify({peers:[url]})});
+    _('netConnResult').innerHTML=`<div class="alert alert-show alert-success">Conectando a ${url}...</div>`;
+    _('netPeerUrl').value='';
+    setTimeout(loadNetwork,2000);
+  }catch(e){_('netConnResult').innerHTML=`<div class="alert alert-show alert-error">${e.message}</div>`}
+}
+
+// === EXPLORER ===
+async function loadExpBlocks(){
+  try{
+    const b=await api('/blocks');
+    _('expBlocks').innerHTML=`<table><tr><th>#</th><th>Hash</th><th>Timestamp</th><th>Dif.</th><th>Txs</th></tr>${
+      (b.blocks||[]).slice(-50).reverse().map(bl=>`<tr><td>#${bl.index}</td><td class="mono hash" title="${bl.hash}">${fmtHash(bl.hash)}</td><td>${fmtTime(bl.timestamp)}</td><td>${bl.difficulty}</td><td>${(bl.data||[]).length}</td></tr>`).join('')
+    }</table>`;
+  }catch(e){_('expBlocks').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function loadExpUtxos(){
+  try{
+    const u=await api('/utxos');
+    const items=u.utxos||[];
+    _('expUtxos').innerHTML=items.length?`<table><tr><th>TxOutId</th><th>Idx</th><th>Direccion</th><th>Cantidad</th></tr>${
+      items.slice(0,100).map(u=>`<tr><td class="mono hash">${fmtHash(u.txOutId)}</td><td>[${u.txOutIndex}]</td><td class="mono addr">${fmtAddr(u.address)}</td><td style="color:var(--green);font-weight:600">${fmtAmt(u.amount)}</td></tr>`).join('')
+    }</table><div style="padding:10px;color:var(--muted);font-size:12px;text-align:center">Mostrando 100 de ${items.length} UTXOs</div>`:'<div class="empty">No hay UTXOs</div>';
+  }catch(e){_('expUtxos').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function loadExpPool(){
+  try{
+    const p=await api('/transaction-pool');
+    pool=Array.isArray(p)?p:[];
+    _('expPool').innerHTML=pool.length?`<table><tr><th>ID</th><th>Outputs</th></tr>${
+      pool.map(tx=>`<tr><td class="mono hash">${fmtHash(tx.id)}</td><td>${(tx.txOuts||[]).map(o=>fmtAddr(o.address)+' = '+o.amount).join(', ')}</td></tr>`).join('')
+    }</table>`:'<div class="empty">Mempool vacio</div>';
+  }catch(e){_('expPool').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+async function loadExpRich(){
+  try{
+    const r=await api('/richlist');
+    const items=r.wallets||[];
+    _('expRich').innerHTML=`<div style="padding:10px;color:var(--muted);font-size:13px">Suministro total: <strong style="color:var(--gold)">${fmtAmt(r.totalSupply)} PRO</strong></div>`+
+    (items.length?`<table><tr><th>#</th><th>Nombre</th><th>Direccion</th><th>Balance</th></tr>${
+      items.map((w,i)=>`<tr><td>${i+1}</td><td>${w.name||'unnamed'}</td><td class="mono addr">${fmtAddr(w.address)}</td><td style="color:var(--green);font-weight:600">${fmtAmt(w.balance)} PRO</td></tr>`).join('')
+    }</table>`:'<div class="empty">No hay carteras con balance</div>');
+  }catch(e){_('expRich').innerHTML='<div class="empty">Error: '+e.message+'</div>'}
+}
+
+// === HELP ===
+const helpTexts = {
+  dashboard: {
+    title: '📊 Dashboard',
+    desc: 'Panel principal con el estado general del nodo BlackCOIN.',
+    items: ['Bloques totales minados en la cadena', 'Transacciones registradas', 'UTXOs disponibles (no gastados)', 'Mempool: transacciones pendientes', 'Pares conectados actualmente', 'Ultimo bloque minado en la red']
+  },
+  wallet: {
+    title: '👛 Wallet',
+    desc: 'Administra tus carteras (wallets). Cada cartera tiene una direccion unica que empieza con P.',
+    items: ['Crear: genera una nueva cartera con clave privada cifrada', 'Importar: recupera una cartera desde su clave privada (64 caracteres hex)', 'Exportar: muestra la clave privada de una cartera (guardala en lugar seguro)', 'El balance se obtiene de la cadena de bloques']
+  },
+  send: {
+    title: '📤 Enviar',
+    desc: 'Transfiere monedas PRO a otra direccion o a un nombre CNS (.pro).',
+    items: ['Selecciona la cartera de origen', 'Destino: direccion P... o nombre.pro', 'Cantidad en PRO (minimo 0.01)', 'Mensaje opcional (max 280 caracteres, se guarda en la blockchain)', 'Necesitas la contraseña de la cartera para firmar']
+  },
+  receive: {
+    title: '📥 Recibir',
+    desc: 'Comparte tu direccion publica para recibir pagos.',
+    items: ['Selecciona la cartera que recibira los fondos', 'Copia tu direccion P... y compartela', 'Quien te envie PRO usara esta direccion como destino', 'El balance se actualiza al recibir la transaccion']
+  },
+  mine: {
+    title: '⛏️ Minar',
+    desc: 'Genera un nuevo bloque resolviendo Prueba de Trabajo (PoW). Obtienes 50 PRO de recompensa.',
+    items: ['Selecciona la cartera que recibira la recompensa', 'Haz clic en "Minar un Bloque"', 'Espera a que se resuelva (puede tomar segundos segun dificultad)', 'Cuanto mayor sea la dificultad, mas tiempo toma']
+  },
+  cns: {
+    title: '📇 CNS Names',
+    desc: 'Crypto Name System: registra nombres legibles para tus direcciones.',
+    items: ['Registra un nombre (sin .pro) y asocialo a una direccion P...', 'Resuelve nombre → direccion o direccion → nombre', 'Puedes enviar fondos a alice.pro en lugar de Pc60444...', 'Los nombres son publicos en la cadena']
+  },
+  network: {
+    title: '🌐 Red',
+    desc: 'Gestiona las conexiones P2P con otros nodos de BlackCOIN.',
+    items: ['Conectate a peers via WebSocket (ws://ip:puerto)', 'Funciona con RadminVPN, Hamachi o red local', 'Los peers sincronizan bloques y transacciones', 'Cuantos mas peers, mas descentralizada la red']
+  },
+  explorer: {
+    title: '🔍 Explorador',
+    desc: 'Navega por la blockchain para inspeccionar bloques, transacciones y UTXOs.',
+    items: ['Bloques: historial completo con hash, dificultad y transacciones', 'UTXOs: salidas no gastadas disponibles para gastar', 'Mempool: transacciones pendientes de minar', 'Rich List: ranking de las carteras con mas saldo']
+  },
+  support: {
+    title: '🎫 Soporte',
+    desc: 'Sistema de tickets para solicitar ayuda a los administradores del nodo.',
+    items: ['Crea un ticket con asunto y mensaje', 'Los admins responden en un chat en tiempo real', 'Puedes adjuntar un ID de transaccion como referencia', 'Los tickets cerrados quedan archivados']
+  },
+  profile: {
+    title: '👤 Perfil',
+    desc: 'Informacion de tu cuenta y configuracion personal.',
+    items: ['Nombre de usuario y rol (usuario/admin)', 'Correo electronico (para recuperacion de contraseña)', 'Cambia tu contraseña cuando quieras', 'El token de sesion se muestra como referencia']
+  },
+  admin: {
+    title: '⚙️ Admin',
+    desc: 'Panel de administracion del nodo (solo para administradores).',
+    items: ['Estadisticas: metricas del nodo, usuarios y tickets', 'Usuarios: gestiona roles, resetea contraseñas', 'Tickets: administra solicitudes de soporte', 'Logs: visualiza los logs del servidor', 'Sesiones: revoca sesiones activas', 'Terminal: ejecuta comandos directamente en el servidor']
+  }
+};
+
+function toggleHelp() {
+  const tip = _('helpTooltip');
+  tip.classList.toggle('show');
+  if (tip.classList.contains('show')) updateHelp();
+}
+
+function updateHelp() {
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  const pageId = active.id.replace('page-', '');
+  const h = helpTexts[pageId] || helpTexts.dashboard;
+  _('helpTitle').textContent = h.title;
+  let html = `<p>${h.desc}</p>`;
+  if (h.items) html += '<ul>' + h.items.map(i => '<li>' + i + '</li>').join('') + '</ul>';
+  _('helpContent').innerHTML = html;
+}
+
+document.addEventListener('click', function (e) {
+  const tip = _('helpTooltip');
+  if (tip.classList.contains('show') && !tip.contains(e.target) && e.target.id !== 'helpBtn') {
+    tip.classList.remove('show');
+  }
+});
+
+// === INIT ===
+(async function(){
+  const authed=await checkAuth();
+  if(authed) loadDashboard();
+  setInterval(()=>{
+    const el=document.querySelector('.page.active');
+    if(el) loadPage(el.id.replace('page-',''));
+  },15000);
+})();
+</script>
+</body>
+</html>

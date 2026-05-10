@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  node1:
+    build: .
+    container_name: blackcoin-node1
+    ports:
+      - "3001:3001"
+      - "6001:6001"
+    environment:
+      - HTTP_PORT=3001
+      - P2P_PORT=6001
+      - NETWORK=mainnet
+      - DATA_DIR=/app/data/node1
+      - BOOTSTRAP_PEERS=ws://node2:6002,ws://node3:6003
+    volumes:
+      - blackcoin-data1:/app/data/node1
+
+  node2:
+    build: .
+    container_name: blackcoin-node2
+    ports:
+      - "3002:3002"
+      - "6002:6002"
+    environment:
+      - HTTP_PORT=3002
+      - P2P_PORT=6002
+      - NETWORK=mainnet
+      - DATA_DIR=/app/data/node2
+      - BOOTSTRAP_PEERS=ws://node1:6001,ws://node3:6003
+    volumes:
+      - blackcoin-data2:/app/data/node2
+
+  node3:
+    build: .
+    container_name: blackcoin-node3
+    ports:
+      - "3003:3003"
+      - "6003:6003"
+    environment:
+      - HTTP_PORT=3003
+      - P2P_PORT=6003
+      - NETWORK=mainnet
+      - DATA_DIR=/app/data/node3
+      - BOOTSTRAP_PEERS=ws://node1:6001,ws://node2:6002
+    volumes:
+      - blackcoin-data3:/app/data/node3
+
+volumes:
+  blackcoin-data1:
+  blackcoin-data2:
+  blackcoin-data3:

@@ -1,0 +1,14 @@
+{
+  "network": "mainnet",
+  "httpPort": 3001,
+  "p2pPort": 6001,
+  "blockGenerationInterval": 60,
+  "difficultyAdjustmentInterval": 10,
+  "coinbaseAmount": 50,
+  "halvingInterval": 210000,
+  "minDifficulty": 2,
+  "dataDir": "./data",
+  "bootstrapPeers": [],
+  "maxPeers": 20,
+  "logLevel": "info"
+}

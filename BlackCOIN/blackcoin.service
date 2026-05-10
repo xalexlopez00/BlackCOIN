@@ -1,0 +1,40 @@
+[Unit]
+Description=BlackCOIN Seed Node
+Documentation=https://github.com/yourorg/blackcoin
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=blackcoin
+Group=blackcoin
+WorkingDirectory=/opt/blackcoin
+
+Environment=NODE_ENV=production
+Environment=HTTP_PORT=3001
+Environment=P2P_PORT=6001
+Environment=DATA_DIR=/var/lib/blackcoin/data
+Environment=CONFIG_PATH=/etc/blackcoin/config.json
+Environment=LOG_LEVEL=info
+
+ExecStart=/usr/bin/node /opt/blackcoin/dist/index.js
+ExecReload=/bin/kill -SIGUSR2 $MAINPID
+Restart=always
+RestartSec=10
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/blackcoin/data /var/log/blackcoin
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+CPUQuota=80%
+
+[Install]
+WantedBy=multi-user.target
